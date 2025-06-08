@@ -1,5 +1,21 @@
 {% include('header.html') %} <h1>cennik</h1>
-<ud>
-    <li><img src="data:image/png;base64,{{ abc }}" alt="" width="600" height="400"></li>
-</ud>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for item in xyz %}
+        <tr>
+            <th>{{ item.date }}</th>
+            <th>{{ item.value }}</th>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<img src="data:image/png;base64, {{abc}}" alt=""/>
+
 {% include('footer.html') %}

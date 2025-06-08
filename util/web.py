@@ -19,7 +19,7 @@ def get_json(tab, date, start, end):
         result = requests.get(f"https://api.nbp.pl/api/exchangerates/tables/{tab}/{start}/{end}/?format=json")
     return result.json()
 
-def get_frame(json):
+def get_frame(json, currency):
     tabpand = {}
     sectab = pd.DataFrame()
     for i in json:
@@ -34,10 +34,10 @@ def get_frame(json):
             sectab[i] = tabpand[i].set_index("code")["mid"]
     sectab_l = sectab.reset_index().melt(id_vars="code", var_name="date", value_name="value")
     sectab_l = sectab_l.merge(getcode, left_on="code", right_on="code", how="inner")
-    return sectab_l
+    return sectab_l[sectab_l["code"] == currency][["date", "value"]]
 
 
-def makeplot(dataset, code):
+def makeplot(dataset):
     fig, ax = plt.subplots(figsize=(12, 8))
 
     dataset["date"] = pd.to_datetime(dataset["date"])
@@ -50,12 +50,10 @@ def makeplot(dataset, code):
     plt.grid(True, color='#EEEFEF')
     plt.xlim(minx, maxx)
 
-    sns.lineplot(data=dataset[dataset["code"].isin(code)],
+    sns.lineplot(data=dataset,
                  x="date",
                  y="value",
-                 hue="currency",
                  ax=ax)
-    plt.legend(bbox_to_anchor=(1.15, 1), loc="upper right")
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)

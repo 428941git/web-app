@@ -4,6 +4,7 @@ from util.config import load_config
 from util.web import *
 import yaml
 import json
+import pandas as pd
 
 CONFIG_FILE = "config.yml"
 
@@ -18,9 +19,9 @@ def template1():
 
 @app.route("/rate/<currency>/<date_start>/<date_end>")
 def rate(currency, date_start, date_end):
-    ap = []
-    ap.append(currency)
-    currency = [a.upper() for a in ap]
-    return render_template("prices.html", abc=makeplot(get_frame(get_json("A", None, date_start, date_end)), currency), xyz="sraka")
+    currency = currency.upper()
+    return render_template("prices.html",
+                           xyz=get_frame(get_json("A", None, date_start, date_end), currency=currency).to_dict(orient="records"),
+                           abc=makeplot(get_frame(get_json("A", None, date_start, date_end), currency=currency)))
 if __name__ == "__main__":
     app.run()
