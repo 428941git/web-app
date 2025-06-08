@@ -36,17 +36,21 @@ def get_frame(json):
 
 
 def makeplot(dataset, code):
-    dataset["date"] = pd.to_datetime(dataset["date"])
     fig, ax = plt.subplots(figsize=(12, 8))
-    sns.lineplot(data=dataset[dataset["code"] == code],
-                 x="date",
-                 y="value",
-                 hue="currency",
-                 ax = ax)
+
+    dataset["date"] = pd.to_datetime(dataset["date"])
     minx = min(dataset["date"])
     maxx = max(dataset["date"])
     xtic = pd.date_range(start=minx, end=maxx, freq='5D')
     ax.set_xticks(xtic)
+    plt.grid(True, color='#EEEFEF')
+    plt.xlim(minx, maxx)
+
+    sns.lineplot(data=dataset[dataset["code"].isin(code)],
+                 x="date",
+                 y="value",
+                 hue="currency",
+                 ax=ax)
     plt.legend(bbox_to_anchor=(1.15, 1), loc="upper right")
     plt.show()
 
@@ -54,4 +58,4 @@ def cr_plot(tab, date, start, end, code):
     makeplot(get_frame(get_json(tab, date, start, end)), code)
 
 if __name__ == "__main__":
-    cr_plot("A", None, "2024-12-02", "2025-01-01", "THB")
+    cr_plot("A", None, "2024-12-02", "2025-01-01", ["THB"])
