@@ -6,10 +6,12 @@ import seaborn as sns
 import json
 import os
 from datetime import datetime, timedelta
+import io
+import base64
+import matplotlib.dates as mdates
 
 
 
-plt.ion()
 def get_json(tab, date, start, end):
     if start == None and end == None:
         result = requests.get(f"https://api.nbp.pl/api/exchangerates/tables/{tab}/{date}/?format=json")
@@ -41,8 +43,10 @@ def makeplot(dataset, code):
     dataset["date"] = pd.to_datetime(dataset["date"])
     minx = min(dataset["date"])
     maxx = max(dataset["date"])
-    xtic = pd.date_range(start=minx, end=maxx, freq='5D')
+    xtic = pd.date_range(start=minx, end=maxx, freq='2D')
     ax.set_xticks(xtic)
+    plt.xticks(rotation=70, ha='right')
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.grid(True, color='#EEEFEF')
     plt.xlim(minx, maxx)
 
@@ -52,6 +56,11 @@ def makeplot(dataset, code):
                  hue="currency",
                  ax=ax)
     plt.legend(bbox_to_anchor=(1.15, 1), loc="upper right")
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    img = base64.b64encode(buf.read()).decode('utf-8')
+    return img
     plt.show()
 
 def cr_plot(tab, date, start, end, code):
