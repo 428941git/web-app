@@ -1,57 +1,116 @@
-{% include('header.html') %} <h1>cennik</h1>
+{% include 'header.html' %}
+<main>
+    <h1>Exchange rate</h1>
 
+    <table class="form-table">
+        <tr>
+            <td>
+                <label for="currency">Currency:</label>
+                <select id="currency" name="currency">
+                    {% for currency in currencies %}
+                    <option value="{{ currency }}">{{ currency }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <label for="date_from">Date from:</label>
+                <input type="date" id="date_from" name="date_from" min="{{ datem }}" max="{{ today }}">
+            </td>
+            <td>
+                <label for="date_to">Date to:</label>
+                <input type="date" id="date_to" name="date_to" max="{{ today }}">
+            </td>
+            <td>
+                <label>&nbsp;</label>
+                <button type="button" onclick="submit()">Create chart</button>
+            </td>
+        </tr>
+    </table>
 
+    {% if chart %}
+    <img src="data:image/png;base64, {{ chart }}" alt="Generated chart">
+    {% endif %}
 
-<table>
-    <tr>
-        <th>
-            <label for="currency">Currency:</label>
-            <select id="currency" name="currency">
-            {%  for currency in currencies %}
-                <option value="{{ currency }}"> {{ currency }}</option>
-            {%  endfor  %}
-            </select>
-        </th>
-
-        <th>
-            <label for="date_from">Date from</label>
-            <input type="date" id="date_from" name="date_from" max="{{ today }}">
-        </th>
-        <th>
-            <label for="date_to">Date to</label>
-            <input type="date" id="date_to" name="date_to" max="{{ today }}">
-        </th>
-        <th>
-            <button type="button" onclick="submit()">Create chart</button>
-        </th>
-    </tr>
-</table>
-
-<img src="data:image/png;base64, {{abc}}" alt=""/>
-
-<table border="1">
+    {% if table %}
+    <table class="data-table">
     <thead>
-    <tr>
-        <th>Date</th>
-        <th>Price</th>
-    </tr>
+        <tr>
+            <th>Date</th>
+            <th>Price</th>
+        </tr>
     </thead>
     <tbody>
-        {% for item in xyz %}
-        <tr>
-            <th>{{ item.date }}</th>
-            <th>{{ item.value }}</th>
+        {% for item in table %}
+        <tr class="data-row {% if loop.index > 5 %}hidden{% endif %}">
+            <td>{{ item.date }}</td>
+            <td>{{ item.value }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+        {% if table|length > 5 %}
+        <button id="toggle-button" onclick="toggleRows()">Show more</button>
+        {% endif %}
+{%  endif %}
+
 <script>
+    const date_from = document.getElementById("date_from");
+    const date_to = document.getElementById("date_to");
+
     function submit() {
-        let currency = document.getElementById("currency").value;
-        let date_from = document.getElementById("date_from").value;
-        let date_to = document.getElementById("date_to").value;
-        let url = `/rate/${currency}/${date_from}/${date_to}`;
+        const currency = document.getElementById("currency").value;
+
+
+        if (!currency || !date_from || !date_to) {
+            alert("Please select all fields before generating the chart.");
+            return;
+        }
+
+        const url = `/rate/${currency}/${date_from.value}/${date_to.value}`;
         window.location.href = url;
     }
+
+    let expanded = false;
+    function toggleRows() {
+        const rows = document.querySelectorAll('.data-row');
+        const button = document.getElementById('toggle-button');
+
+        if (!expanded) {
+            rows.forEach((row, index) => {
+                if (index >= 5) row.classList.remove('hidden');
+            });
+            button.textContent = "Show less";
+        } else {
+            rows.forEach((row, index) => {
+                if (index >= 5) row.classList.add('hidden');
+            });
+            button.textContent = "Show more";
+        }
+
+        expanded = !expanded;
+    }
+
+    function formatDate(date) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+
+    date_from.addEventListener('change', () => {
+        if (!date_from.value) {
+            date_to.max = new Date("{{ today }}");
+        }
+
+        const fromDate = new Date(date_from.value);
+        const maxDate = new Date(fromDate);
+        maxDate.setDate(fromDate.getDate() + 93);
+        const today = new Date("{{ today }}");
+        const finalDate = maxDate <  today ? maxDate : today;
+        const finalDateStr = formatDate(finalDate);
+        date_to.setAttribute('max', finalDateStr);
+    });
 </script>
-{% include('footer.html') %}
+
+{% include 'footer.html' %}
