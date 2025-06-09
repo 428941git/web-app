@@ -36,6 +36,12 @@ def get_frame(json, currency):
     sectab_l = sectab_l.merge(getcode, left_on="code", right_on="code", how="inner")
     return sectab_l[sectab_l["code"] == currency][["date", "value"]]
 
+def get_currencies(json):
+    i = json[0]
+    for o in i.values():
+        if isinstance(o, list):
+            tab = [p["code"] for p in o]
+    return tab
 
 def makeplot(dataset):
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -65,4 +71,4 @@ def cr_plot(tab, date, start, end, code):
     makeplot(get_frame(get_json(tab, date, start, end)), code)
 
 if __name__ == "__main__":
-    cr_plot("A", None, "2024-12-02", "2025-01-01", ["THB"])
+    get_currencies(get_json("A", None, "2025-03-02", "2025-03-10"))
